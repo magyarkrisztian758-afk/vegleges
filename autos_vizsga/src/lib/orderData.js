@@ -1,0 +1,22 @@
+export const orders = [
+  {
+    id: 101,
+    email: 'user@carcore.hu',
+    items: [
+      { id: 1, name: 'Légszűrő', quantity: 1, price: 8990 }
+    ],
+    total: 8990,
+    payment: 'card',
+    timestamp: '2026-04-12T10:30:00Z'
+  },
+  {
+    id: 102,
+    email: 'user@carcore.hu',
+    items: [
+      { id: 4, name: 'Féktárcsa első', quantity: 2, price: 15990 }
+    ],
+    total: 31980,
+    payment: 'card',
+    timestamp: '2026-04-15T15:15:00Z'
+  }
+];
