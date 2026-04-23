@@ -7,8 +7,8 @@ function SupportPage() {
         <div className="support-grid">
           <div>
             <h3>Kapcsolat</h3>
-            <p>Email: support@carcore.hu</p>
-            <p>Telefon: +36 30 123 4567</p>
+            <p>Telefon: +36 20 224 1115</p>
+            <p>Cím: Szolnok, Áchim András u. 12-14, 5000</p>
           </div>
           <div>
             <h3>Nyitvatartás</h3>

@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../lib/CartContext';
+import { useAuth } from '../lib/useAuth';
+import { supabase } from '../lib/supabaseClient';
 
 function CheckoutPage() {
   const { items, total, clearCart } = useCart();
+  const { user } = useAuth();
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
@@ -15,17 +18,81 @@ function CheckoutPage() {
 
   const submit = async (event) => {
     event.preventDefault();
-    setIsSubmitting(true);
-    setMessage('Rendelés feldolgozása...');
+    
+    if (!user) {
+      setMessage('❌ Kérlek, jelentkezz be a rendelés leadásához!');
+      return;
+    }
 
-    // Szimulált rendelés leadás
-    setTimeout(() => {
-      setMessage('Rendelés sikeresen leadva!');
+    if (items.length === 0) {
+      setMessage('❌ A kosarad üres!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setMessage('⏳ Rendelés feldolgozása...');
+
+    try {
+      // Insert order into orders table
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert([
+          {
+            user_id: user.id,
+            total_price: total,
+            shipping_address: `${city}, ${address}`,
+            status: 'pending',
+          },
+        ])
+        .select();
+
+      if (orderError) {
+        console.error('❌ Order insert hiba:', orderError);
+        setMessage(`❌ Hiba a rendelés létrehozásakor: ${orderError.message}`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!orderData || orderData.length === 0) {
+        setMessage('❌ Hiba: nincs visszaadott rendelés adat');
+        setIsSubmitting(false);
+        return;
+      }
+
+      const orderId = orderData[0].id;
+      console.log('✓ Rendelés létrehozva:', orderId);
+
+      // Prepare order items
+      const orderItems = items.map((item) => ({
+        order_id: orderId,
+        product_id: item.id,
+        quantity: item.quantity,
+        price_at_purchase: item.price,
+      }));
+
+      // Insert order items
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        console.error('❌ Order items insert hiba:', itemsError);
+        setMessage(`❌ Hiba a rendelés tételek mentésekor: ${itemsError.message}`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('✓ Rendelés tételei mentve');
+      setMessage('✓ Rendelés sikeresen leadva!');
       clearCart();
       setTimeout(() => {
-        navigate('/order-preview');
+        navigate('/order-preview', { state: { orderId } });
       }, 1000);
-    }, 1000);
+    } catch (error) {
+      console.error('❌ Nem várt hiba:', error);
+      setMessage(`❌ Hiba történt: ${error.message}`);
+      setIsSubmitting(false);
+    }
   };
 
   return (

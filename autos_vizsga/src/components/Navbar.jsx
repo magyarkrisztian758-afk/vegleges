@@ -53,32 +53,34 @@ function Navbar({ filters, onFiltersChange }) {
               onChange={(e) => updateFilter('oem', e.target.value)}
             />
           </div>
-          <nav className="desktop-nav">
-            {user ? (
-              <button
-                className="logout-btn"
-                type="button"
-                onClick={handleLogout}
-              >
-                Kijelentkezés
-              </button>
-            ) : (
-              <>
-                <Link to="/login">Bejelentkezés</Link>
-                <Link to="/register">Regisztráció</Link>
-              </>
-            )}
-          </nav>
-          <button className="cart-btn" type="button" onClick={toggleCart}>
-            <ShoppingCart size={18} /> Kosár ({cartItemCount})
-          </button>
-          <button
-            className="menu-toggle"
-            type="button"
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            <Menu size={18} />
-          </button>
+          <div className="header-actions">
+            <nav className="desktop-nav">
+              {user ? (
+                <button
+                  className="logout-btn"
+                  type="button"
+                  onClick={handleLogout}
+                >
+                  Kijelentkezés
+                </button>
+              ) : (
+                <>
+                  <Link to="/login">Bejelentkezés</Link>
+                  <Link to="/register">Regisztráció</Link>
+                </>
+              )}
+            </nav>
+            <button className="cart-btn" type="button" onClick={toggleCart}>
+              <ShoppingCart size={18} /> Kosár ({cartItemCount})
+            </button>
+            <button
+              className="menu-toggle"
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <Menu size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -87,19 +89,8 @@ function Navbar({ filters, onFiltersChange }) {
           <Link to="/">Főoldal</Link>
           <Link to="/garancia">Garancia</Link>
           <Link to="/szallitas">Szállítás</Link>
-          {user ? (
-            <button
-              className="logout-btn"
-              type="button"
-              onClick={handleLogout}
-            >
-              Kijelentkezés
-            </button>
-          ) : (
-            <>
-              <Link to="/login">Bejelentkezés</Link>
-              <Link to="/register">Regisztráció</Link>
-            </>
+          {user && (
+            <Link to="/rendeléseim">Rendeléseim</Link>
           )}
         </div>
       )}
