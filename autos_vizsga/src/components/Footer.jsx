@@ -20,7 +20,6 @@ function Footer() {
         </div>
         <div>
           <h4>Kapcsolat</h4>
-          <p>Email: support@carcore.hu</p>
           <p>Telefon: +36 20 224 1115</p>
           <p>Cím: Szolnok, Áchim András u. 12-14, 5000</p>
         </div>

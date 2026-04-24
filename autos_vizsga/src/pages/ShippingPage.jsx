@@ -7,7 +7,6 @@ function ShippingPage() {
         <ul>
           <li>24 órán belüli feldolgozás</li>
           <li>Magyarországon belül 3-5 munkanapos kiszállítás</li>
-          <li>Nyomon követhető csomagküldés</li>
         </ul>
       </section>
     </main>

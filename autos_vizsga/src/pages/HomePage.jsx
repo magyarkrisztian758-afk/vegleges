@@ -43,7 +43,7 @@ function HomePage({ filters }) {
       ? item.brand.toLowerCase().includes(filters.brand.toLowerCase())
       : true;
     const matchesOem = filters.oem
-      ? item.oem.toLowerCase().includes(filters.oem.toLowerCase())
+      ? item.oem_code.toLowerCase().includes(filters.oem.toLowerCase())
       : true;
     return matchesQuery && matchesBrand && matchesOem;
   });
@@ -66,7 +66,7 @@ function HomePage({ filters }) {
           <p className="eyebrow">Autóalkatrész webshop</p>
           <h2>Találd meg a legjobb alkatrészt a CarCore kínálatából.</h2>
           <p className="hero-text">
-            Gyors szűrés márka, név és OEM szerint. Kosár és pénztár funkció kész.
+            Gyors szűrés márka, név és OEM szerint.
           </p>
         </div>
       </section>

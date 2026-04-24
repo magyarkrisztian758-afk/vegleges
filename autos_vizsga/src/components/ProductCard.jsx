@@ -28,14 +28,14 @@ function ProductCard({ product }) {
 
   return (
     <article className="product-card">
-      <img src={product.image} alt={product.name} />
+      <img src={product.image_url} alt={product.name} />
       <div className="product-details">
         <div className="product-labels">
           <span className="badge">{product.brand}</span>
           <span className="badge muted">{product.category}</span>
         </div>
         <h3>{product.name}</h3>
-        <p className="muted">OEM: {product.oem}</p>
+        <p className="muted">OEM: {product.oem_code}</p>
         <p>{product.description}</p>
         <div className="compatibility">
           <strong>Kompatibilitás:</strong>
@@ -45,7 +45,9 @@ function ProductCard({ product }) {
       <div className="product-footer">
         <div>
           <p className="price">{product.price.toLocaleString()} Ft</p>
-          <p className="stock">Raktár: {product.inventory}</p>
+          <p className="stock">
+            Raktár: {product.stock > 0 ? `${product.stock} db` : 'Nincs raktáron'}
+          </p>
         </div>
         <button
           className="primary-button"
