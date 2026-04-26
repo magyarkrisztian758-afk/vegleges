@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 function Footer() {
   return (
     <footer className="site-footer">
@@ -12,10 +14,10 @@ function Footer() {
         <div>
           <h4>Szolgáltatások</h4>
           <ul>
-            <li><a href="/">Főoldal</a></li>
-            <li><a href="/garancia">Garancia</a></li>
-            <li><a href="/szallitas">Szállítás</a></li>
-            <li><a href="/visszakuldes">Visszaküldés</a></li>
+            <li><Link to="/">Főoldal</Link></li>
+            <li><Link to="/garancia">Garancia</Link></li>
+            <li><Link to="/szallitas">Szállítás</Link></li>
+            <li><Link to="/visszakuldes">Visszaküldés</Link></li>
           </ul>
         </div>
         <div>

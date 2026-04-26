@@ -63,6 +63,22 @@ app.get('/api/admin/orders', (req, res) => {
   res.json(orders);
 });
 
+app.post('/api/products/:id/update-stock', (req, res) => {
+  const { id } = req.params;
+  const { quantity } = req.body;
+  const productIndex = products.findIndex(p => p.id == id);
+  if (productIndex === -1) {
+    return res.status(404).json({ status: 'error', message: 'Termék nem található' });
+  }
+  products[productIndex].stock -= quantity;
+  if (products[productIndex].stock < 0) {
+    products[productIndex].stock = 0; // Nem engedjük negatív készletet
+  }
+  // Frissítjük a JSON fájlt
+  fs.writeFileSync(path.join(__dirname, 'data', 'products.json'), JSON.stringify(products, null, 2));
+  res.json({ status: 'success', stock: products[productIndex].stock });
+});
+
 app.listen(PORT, () => {
   console.log(`CarCore backend fut a http://localhost:${PORT}`);
 });

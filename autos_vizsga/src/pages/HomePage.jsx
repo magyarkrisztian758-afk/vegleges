@@ -16,7 +16,7 @@ function HomePage({ filters }) {
         const { data, error: fetchError } = await supabase
           .from('products')
           .select('*');
-        
+
         if (fetchError) throw fetchError;
         setProducts(data || []);
       } catch (err) {

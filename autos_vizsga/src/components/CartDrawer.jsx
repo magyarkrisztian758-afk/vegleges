@@ -79,10 +79,7 @@ function CartDrawer() {
             <button
               className="primary-button"
               type="button"
-              onClick={() => {
-                setIsCartOpen(false);
-                navigate('/checkout');
-              }}
+              onClick={() => {}}
             >
               Pénztárhoz
             </button>

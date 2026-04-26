@@ -83,6 +83,26 @@ function CheckoutPage() {
       }
 
       console.log('✓ Rendelés tételei mentve');
+
+      // Update product stock using RPC
+      for (const item of items) {
+        console.log(`Attempting to decrement stock for product ${item.id} by ${item.quantity}`);
+        const { data, error: rpcError } = await supabase.rpc('decrement_stock', {
+          product_id: item.id,
+          quantity: item.quantity,
+        });
+
+        if (rpcError) {
+          console.error('❌ Stock decrement RPC hiba:', rpcError);
+          setMessage(`❌ Hiba a készlet frissítésekor: ${rpcError.message}`);
+          setIsSubmitting(false);
+          return;
+        }
+
+        console.log(`✓ ${item.name} készlet frissítve: ${data}`);
+      }
+
+      console.log('✓ Készletek frissítve');
       setMessage('✓ Rendelés sikeresen leadva!');
       clearCart();
       setTimeout(() => {
