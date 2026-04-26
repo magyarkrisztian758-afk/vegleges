@@ -3,9 +3,15 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import Stripe from 'stripe';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const loadJson = (fileName) => {
   const filePath = path.join(__dirname, 'data', fileName);
@@ -28,6 +34,54 @@ app.get('/api', (req, res) => {
 
 app.get('/api/products', (req, res) => {
   res.json(products);
+});
+
+app.post('/api/create-checkout-session', async (req, res) => {
+  const { cartItems, orderId } = req.body;
+
+  const lineItems = cartItems.map(item => ({
+    price_data: {
+      currency: 'huf',
+      product_data: {
+        name: item.name,
+        metadata: {
+          product_id: item.id,
+        },
+      },
+      unit_amount: item.price * 100,
+    },
+    quantity: item.quantity,
+  }));
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      mode: 'payment',
+      client_reference_id: orderId,
+      success_url: 'http://localhost:5174/success?session_id={CHECKOUT_SESSION_ID}',
+      cancel_url: 'http://localhost:5174/cancel',
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error('Stripe error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/checkout-session/:sessionId', async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['line_items'],
+    });
+    res.json(session);
+  } catch (error) {
+    console.error('Stripe session retrieve error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/api/login', (req, res) => {

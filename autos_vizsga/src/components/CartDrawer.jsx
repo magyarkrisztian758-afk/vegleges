@@ -14,6 +14,33 @@ function CartDrawer() {
   } = useCart();
   const navigate = useNavigate();
 
+  const handleCheckout = async () => {
+    const orderId = Date.now().toString(); // Generate a simple order ID
+
+    try {
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cartItems: items,
+          orderId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Hiba történt a pénztár indításakor. Próbáld újra.');
+    }
+  };
+
   if (!isCartOpen) return null;
 
   return (
@@ -79,7 +106,7 @@ function CartDrawer() {
             <button
               className="primary-button"
               type="button"
-              onClick={() => {}}
+              onClick={handleCheckout}
             >
               Pénztárhoz
             </button>
