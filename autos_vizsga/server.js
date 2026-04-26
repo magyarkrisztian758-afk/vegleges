@@ -3,9 +3,15 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import Stripe from 'stripe';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.local' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const loadJson = (fileName) => {
   const filePath = path.join(__dirname, 'data', fileName);
@@ -46,13 +52,32 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-app.post('/api/create-payment-intent', (req, res) => {
-  const { amount } = req.body;
-  return res.json({
-    status: 'success',
-    clientSecret: 'test_client_secret_123',
-    amount: amount || 0
-  });
+app.post('/api/create-payment-intent', async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ status: 'error', message: 'Invalid amount' });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Stripe centekben számol
+      currency: 'huf',
+      metadata: { order_source: 'carcore' },
+    });
+
+    return res.json({
+      status: 'success',
+      clientSecret: paymentIntent.client_secret,
+      amount: amount,
+    });
+  } catch (error) {
+    console.error('❌ Stripe error:', error);
+    return res.status(500).json({ 
+      status: 'error', 
+      message: error.message 
+    });
+  }
 });
 
 app.get('/api/admin/users', (req, res) => {

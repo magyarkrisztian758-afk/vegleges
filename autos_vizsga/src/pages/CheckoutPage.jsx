@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '../lib/CartContext';
 import { useAuth } from '../lib/useAuth';
 import { supabase } from '../lib/supabaseClient';
 
-function CheckoutPage() {
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+
+function CheckoutFormContent() {
+  const stripe = useStripe();
+  const elements = useElements();
   const { items, total, clearCart } = useCart();
   const { user } = useAuth();
   const [name, setName] = useState('');
@@ -16,9 +22,68 @@ function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const submit = async (event) => {
+  const createOrder = async () => {
+    try {
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert([
+          {
+            user_id: user.id,
+            total_price: total,
+            shipping_address: `${city}, ${address}`,
+            status: paymentMethod === 'cod' ? 'confirmed' : 'pending',
+          },
+        ])
+        .select();
+
+      if (orderError) {
+        console.error('❌ Order insert hiba:', orderError);
+        throw new Error(orderError.message);
+      }
+
+      const orderId = orderData[0].id;
+      const orderItems = items.map((item) => ({
+        order_id: orderId,
+        product_id: item.id,
+        quantity: item.quantity,
+        price_at_purchase: item.price,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        console.error('❌ Order items insert hiba:', itemsError);
+        throw new Error(itemsError.message);
+      }
+
+      for (const item of items) {
+        const { error: rpcError } = await supabase.rpc('decrement_stock', {
+          product_id: item.id,
+          quantity: item.quantity,
+        });
+
+        if (rpcError) {
+          console.error('❌ Stock decrement RPC hiba:', rpcError);
+          throw new Error(rpcError.message);
+        }
+      }
+
+      return orderId;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleCardPayment = async (event) => {
     event.preventDefault();
-    
+
+    if (!stripe || !elements) {
+      setMessage('❌ Stripe még nem töltött be. Kérlek, próbáld később!');
+      return;
+    }
+
     if (!user) {
       setMessage('❌ Kérlek, jelentkezz be a rendelés leadásához!');
       return;
@@ -33,81 +98,67 @@ function CheckoutPage() {
     setMessage('⏳ Rendelés feldolgozása...');
 
     try {
-      // Insert order into orders table
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert([
-          {
-            user_id: user.id,
-            total_price: total,
-            shipping_address: `${city}, ${address}`,
-            status: 'pending',
-          },
-        ])
-        .select();
-
-      if (orderError) {
-        console.error('❌ Order insert hiba:', orderError);
-        setMessage(`❌ Hiba a rendelés létrehozásakor: ${orderError.message}`);
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!orderData || orderData.length === 0) {
-        setMessage('❌ Hiba: nincs visszaadott rendelés adat');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const orderId = orderData[0].id;
+      // 1. Rendelés létrehozása az adatbázisban
+      const orderId = await createOrder();
       console.log('✓ Rendelés létrehozva:', orderId);
 
-      // Prepare order items
-      const orderItems = items.map((item) => ({
-        order_id: orderId,
-        product_id: item.id,
-        quantity: item.quantity,
-        price_at_purchase: item.price,
-      }));
+      // 2. PaymentIntent létrehozása a backend-en
+      const response = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount: total }),
+      });
 
-      // Insert order items
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
+      const data = await response.json();
 
-      if (itemsError) {
-        console.error('❌ Order items insert hiba:', itemsError);
-        setMessage(`❌ Hiba a rendelés tételek mentésekor: ${itemsError.message}`);
+      if (!response.ok) {
+        throw new Error(data.message || 'Payment intent hiba');
+      }
+
+      const paymentIntentSecret = data.clientSecret;
+
+      // 3. Stripe fizetés feldolgozása
+      const result = await stripe.confirmCardPayment(paymentIntentSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            name: name,
+            address: {
+              line1: address,
+              city: city,
+              postal_code: postal,
+            },
+          },
+        },
+      });
+
+      if (result.error) {
+        console.error('❌ Stripe error:', result.error);
+        setMessage(`❌ Fizetési hiba: ${result.error.message}`);
         setIsSubmitting(false);
         return;
       }
 
-      console.log('✓ Rendelés tételei mentve');
+      if (result.paymentIntent.status === 'succeeded') {
+        console.log('✓ Fizetés sikeres!');
 
-      // Update product stock using RPC
-      for (const item of items) {
-        console.log(`Attempting to decrement stock for product ${item.id} by ${item.quantity}`);
-        const { data, error: rpcError } = await supabase.rpc('decrement_stock', {
-          product_id: item.id,
-          quantity: item.quantity,
-        });
+        // 4. Rendelés státusza frissítése
+        await supabase
+          .from('orders')
+          .update({ status: 'confirmed' })
+          .eq('id', orderId);
 
-        if (rpcError) {
-          console.error('❌ Stock decrement RPC hiba:', rpcError);
-          setMessage(`❌ Hiba a készlet frissítésekor: ${rpcError.message}`);
-          setIsSubmitting(false);
-          return;
-        }
-
-        console.log(`✓ ${item.name} készlet frissítve: ${data}`);
+        setMessage('✓ Fizetés sikeres! Rendelés megerősítve!');
+        clearCart();
+        setTimeout(() => {
+          navigate('/order-preview', { state: { orderId } });
+        }, 1500);
+      } else {
+        setMessage('❌ Fizetés feldolgozása sikertelen volt. Kérlek, próbáld újra!');
+        setIsSubmitting(false);
       }
-
-      console.log('✓ Készletek frissítve');
-      setMessage('✓ Rendelés sikeresen leadva!');
-      clearCart();
-      setTimeout(() => {
-        navigate('/order-preview', { state: { orderId } });
-      }, 1000);
     } catch (error) {
       console.error('❌ Nem várt hiba:', error);
       setMessage(`❌ Hiba történt: ${error.message}`);
@@ -115,28 +166,87 @@ function CheckoutPage() {
     }
   };
 
+  const handleCODPayment = async (event) => {
+    event.preventDefault();
+
+    if (!user) {
+      setMessage('❌ Kérlek, jelentkezz be a rendelés leadásához!');
+      return;
+    }
+
+    if (items.length === 0) {
+      setMessage('❌ A kosarad üres!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setMessage('⏳ Rendelés feldolgozása...');
+
+    try {
+      const orderId = await createOrder();
+      setMessage('✓ Rendelés sikeresen leadva! Az összeg az átvételkor esedékes!');
+      clearCart();
+      setTimeout(() => {
+        navigate('/order-preview', { state: { orderId } });
+      }, 1500);
+    } catch (error) {
+      console.error('❌ Nem várt hiba:', error);
+      setMessage(`❌ Hiba történt: ${error.message}`);
+      setIsSubmitting(false);
+    }
+  };
+
+  const submit = (event) => {
+    if (paymentMethod === 'card') {
+      handleCardPayment(event);
+    } else {
+      handleCODPayment(event);
+    }
+  };
+
   return (
     <main className="container checkout-page">
       <section className="checkout-grid">
         <div className="form-card">
-          <h2>Szállítási adatok</h2>
+          <h2>Szállítási adatok és fizetés</h2>
           <form onSubmit={submit}>
             <label>
               Név
-              <input value={name} onChange={(e) => setName(e.target.value)} required />
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
             </label>
             <label>
               Cím
-              <input value={address} onChange={(e) => setAddress(e.target.value)} required />
+              <input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
             </label>
             <label>
               Város
-              <input value={city} onChange={(e) => setCity(e.target.value)} required />
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
             </label>
             <label>
               Irányítószám
-              <input value={postal} onChange={(e) => setPostal(e.target.value)} required />
+              <input
+                value={postal}
+                onChange={(e) => setPostal(e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
             </label>
+
             <div className="payment-method">
               <h4>Fizetési mód</h4>
               <label>
@@ -146,8 +256,9 @@ function CheckoutPage() {
                   value="card"
                   checked={paymentMethod === 'card'}
                   onChange={(e) => setPaymentMethod(e.target.value)}
+                  disabled={isSubmitting}
                 />
-                Kártyás fizetés
+                Bankkártya (Stripe)
               </label>
               <label>
                 <input
@@ -156,12 +267,41 @@ function CheckoutPage() {
                   value="cod"
                   checked={paymentMethod === 'cod'}
                   onChange={(e) => setPaymentMethod(e.target.value)}
+                  disabled={isSubmitting}
                 />
                 Utánvétel
               </label>
             </div>
-            <button className="primary-button" type="submit" disabled={isSubmitting || items.length === 0}>
-              Rendelés leadása
+
+            {paymentMethod === 'card' && (
+              <div className="card-element-container">
+                <label>Bankkártya adatok</label>
+                <CardElement
+                  options={{
+                    style: {
+                      base: {
+                        fontSize: '16px',
+                        color: '#424770',
+                        '::placeholder': {
+                          color: '#aab7c4',
+                        },
+                      },
+                      invalid: {
+                        color: '#fa755a',
+                      },
+                    },
+                  }}
+                  disabled={isSubmitting}
+                />
+              </div>
+            )}
+
+            <button
+              className="primary-button"
+              type="submit"
+              disabled={isSubmitting || items.length === 0}
+            >
+              {isSubmitting ? 'Feldolgozás...' : 'Rendelés leadása'}
             </button>
           </form>
           {message && <p className="status-text">{message}</p>}
@@ -192,6 +332,14 @@ function CheckoutPage() {
         </aside>
       </section>
     </main>
+  );
+}
+
+function CheckoutPage() {
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutFormContent />
+    </Elements>
   );
 }
 
