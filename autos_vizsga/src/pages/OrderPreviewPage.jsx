@@ -25,7 +25,7 @@ function OrderPreviewPage() {
             </div>
           </div>
         ) : (
-          <p>A kosarad üres, de a rendelésed szimulált.</p>
+          <p>A kosarad üres.</p>
         )}
         <Link to="/rendeléseim" className="primary-button">
           Rendeléseim megtekintése

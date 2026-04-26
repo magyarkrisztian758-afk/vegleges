@@ -7,7 +7,7 @@ function PrivacyPage() {
           A CarCore az ügyfelek adatait bizalmasan kezeli, és csak a rendelés teljesítéséhez használja fel.
         </p>
         <ul>
-          <li>A jelszavakat fejlesztési környezetben nem tároljuk titkosítatlanul.</li>
+          <li>A jelszavakat titkosított módon tároljuk.</li>
           <li>Csak szükséges adatokat kérünk be a rendeléshez.</li>
           <li>Harmadik félnek személyes adatokat nem adunk át engedély nélkül.</li>
         </ul>
