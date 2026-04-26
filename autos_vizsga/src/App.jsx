@@ -13,6 +13,8 @@ import ReturnsPage from './pages/ReturnsPage';
 import SupportPage from './pages/SupportPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import SuccessPage from './pages/SuccessPage';
+import CancelPage from './pages/CancelPage';
 import { CartProvider } from './lib/CartContext';
 
 function App() {
@@ -34,6 +36,8 @@ function App() {
           <Route path="/support" element={<SupportPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/success" element={<SuccessPage />} />
+          <Route path="/cancel" element={<CancelPage />} />
         </Routes>
       </Layout>
     </CartProvider>
