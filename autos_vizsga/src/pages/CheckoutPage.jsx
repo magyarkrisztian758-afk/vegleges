@@ -113,7 +113,7 @@ function CheckoutFormContent() {
     try {
       // 1. Rendelés létrehozása az adatbázisban
       const orderId = await createOrder();
-      console.log('✓ Rendelés létrehozva:', orderId);
+
 
       // 2. PaymentIntent létrehozása a backend-en
       const response = await fetch('/api/create-payment-intent', {
@@ -155,7 +155,6 @@ function CheckoutFormContent() {
       }
 
       if (result.paymentIntent.status === 'succeeded') {
-        console.log('✓ Fizetés sikeres!');
 
         // 4. Rendelés státusza frissítése
         await supabase

@@ -18,13 +18,6 @@ function HomePage({ filters }) {
           .select('*');
 
         if (fetchError) throw fetchError;
-        
-        // Debug log - hiányzó képek ellenőrzése
-        const productsWithoutImage = data.filter(p => !p.image_url);
-        if (productsWithoutImage.length > 0) {
-          console.warn(`⚠️ ${productsWithoutImage.length} terméknek hiányzik az image_url:`, productsWithoutImage);
-        }
-        
         setProducts(data || []);
       } catch (err) {
         console.error('Hiba a termékek betöltésekor:', err);
