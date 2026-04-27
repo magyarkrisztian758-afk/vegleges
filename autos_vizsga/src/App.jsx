@@ -15,6 +15,7 @@ import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import SuccessPage from './pages/SuccessPage';
 import CancelPage from './pages/CancelPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { CartProvider } from './lib/CartContext';
 
 function App() {
@@ -38,6 +39,8 @@ function App() {
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/success" element={<SuccessPage />} />
           <Route path="/cancel" element={<CancelPage />} />
+          <Route path="/not-found" element={<NotFoundPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Layout>
     </CartProvider>

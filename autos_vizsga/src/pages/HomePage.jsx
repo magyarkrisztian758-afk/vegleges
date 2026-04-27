@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { supabase } from '../lib/supabaseClient';
 
@@ -8,6 +9,7 @@ function HomePage({ filters }) {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -20,8 +22,7 @@ function HomePage({ filters }) {
         if (fetchError) throw fetchError;
         setProducts(data || []);
       } catch (err) {
-        console.error('Hiba a termékek betöltésekor:', err);
-        setError('Nem sikerült betölteni a termékeket. Próbáld újra később.');
+        navigate('/not-found');
       } finally {
         setLoading(false);
       }
