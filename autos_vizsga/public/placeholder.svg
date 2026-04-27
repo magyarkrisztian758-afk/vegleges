@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="240" viewBox="0 0 360 240">
+  <rect width="360" height="240" rx="24" ry="24" fill="#1f2937" />
+  <rect x="18" y="18" width="324" height="204" rx="16" ry="16" fill="#111827" />
+  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#9ca3af" font-family="Inter, system-ui, sans-serif" font-size="24">
+    CarCore
+  </text>
+</svg>

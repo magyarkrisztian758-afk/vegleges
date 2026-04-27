@@ -1,0 +1,88 @@
+CarCore Autóalkatrész Webshop – Vizsgaprojekt Dokumentáció
+Projekt adatai
+Készítették: Magyar Krisztián, Bacsó Alex
+
+Verzió: 1.0
+
+Dátum: 2026. április 27.
+
+Technológiai stack: React, Node.js, Express, Supabase, Stripe
+
+1. A szoftver célja és a megoldandó probléma
+A CarCore egy modern, magyar nyelvű autóalkatrész webáruház, amely életszerű megoldást kínál az online alkatrész-kereskedelemre. A szoftver célja, hogy a vásárlók számára egy gyors, reszponzív és biztonságos felületet biztosítson a böngészéshez és a vásárláshoz. A rendszer megoldja a termékek kategorizált listázását, a kosárkezelést, a biztonságos kártyás fizetést, valamint a rendelések nyomon követését.
+
+2. Főbb funkciók
+Termékkatalógus: Kereshető és szűrhető terméklista.
+
+Kosárkezelés: Termékek hozzáadása, mennyiség módosítása és törlése.
+
+Felhasználói kezelés: Regisztráció és bejelentkezés (Supabase Auth).
+
+Rendeléskezelés: Rendeléstörténet megtekintése és státuszkövetés.
+
+Fizetési opciók: Integrált Stripe bankkártyás fizetés és utánvételes lehetőség.
+
+Hibatűrés: Automatikus tájékoztatás és utánvétes fizetés felkínálása, ha a Stripe erőforrásait adblocker blokkolja.
+
+3. Műszaki megvalósítás és Architektúra
+A szoftver RESTful architektúrára épül, biztosítva a kliens és a szerver oldali logikai szétválasztást.
+
+Frontend (Kliens): React 18 és Vite alapú Single Page Application (SPA). A felület teljesen reszponzív, így asztali gépen és mobil eszközökön is optimális megjelenítést biztosít.
+
+Backend (Szerver): Node.js + Express alapú REST API (server.js), amely kiszolgálja a frontend kéréseit és kezeli a Stripe tranzakciókat.
+
+Adattárolás: Hibrid rendszer. A katalógusadatokat JSON állományok (data/) szolgáltatják, míg a dinamikus adatokat (profilok, rendelések) és a hitelesítést a Supabase (PostgreSQL) kezeli.
+
+4. Projekt struktúra
+src/ – Frontend forráskód (komponensek, oldalak, üzleti logika).
+
+server.js – Express backend API és szerver konfiguráció.
+
+data/ – Termék-, felhasználó- és rendelésadatok JSON formátumban.
+
+docs/ – Projekt dokumentációk (Adatbázismodell-diagram, SQL dump, Tesztjegyzőkönyv).
+
+tests/ – Automatizált integrációs tesztek (Jest, Supertest).
+
+.env.local – Környezeti változók a biztonságos API kulcsok tárolásához.
+
+5. Telepítés és Futtatás
+Függőségek telepítése: npm install
+
+Környezeti változók beállítása a .env.local fájlban:
+
+VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+
+STRIPE_SECRET_KEY, VITE_STRIPE_PUBLIC_KEY
+
+Szerver és Kliens egyidejű indítása fejlesztői módban:
+
+Bash
+npm run dev-all
+6. Adatbázis és Tesztelés
+Adatbázis modell
+A rendszer négy fő entitást kezel: Profiles (felhasználói adatok), Products (alkatrész adatok), Orders (rendelés fejlécek) és Order_Items (rendelési tételek). A részletes séma a docs/ mappában található SQL dump fájlban érhető el.
+
+Tesztelés
+A backend stabilitását Jest és Supertest segítségével végzett automatizált integrációs tesztek garantálják.
+
+TC01: API elérhetőség ellenőrzése.
+
+TC02: Terméklista sikeres lekérése és adatszerkezet validálása.
+
+TC03: Nem létező végpontok (404) megfelelő kezelése.
+
+7. A leadott csomag tartalma
+[x] Teljes forráskód (Frontend + Backend).
+
+[x] Adatbázismodell-diagram (docs/db_schema.pdf).
+
+[x] Adatbázis export fájl / SQL Dump (docs/database_dump.sql).
+
+[x] Tesztkódok és hivatalos Tesztjegyzőkönyv (docs/Teszt_Jegyzokonyv.md).
+
+[x] Projekt dokumentáció (ez a dokumentum).
+
+Készítették: Magyar Krisztián & Bacsó Alex
+
+Dátum: 2026. április 27.

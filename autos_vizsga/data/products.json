@@ -9,7 +9,7 @@
     "description": "Magas hatásfokú, hosszú élettartamú légszűrő a tiszta motorlevegőért.",
     "price": 8990,
     "stock": 34,
-    "image_url": "https://dummyimage.com/360x240/cccccc/000000&text=Légszűrő"
+    "image_url": "/placeholder.svg"
   },
   {
     "id": 2,
@@ -21,7 +21,7 @@
     "description": "Tartós olajszűrő az optimális motorteljesítmény fenntartásához.",
     "price": 4290,
     "stock": 48,
-    "image_url": "https://dummyimage.com/360x240/cccccc/000000&text=Olajszűrő"
+    "image_url": "/placeholder.svg"
   },
   {
     "id": 3,
@@ -33,7 +33,7 @@
     "description": "Megbízható indítási teljesítmény minden évszakban.",
     "price": 27990,
     "stock": 21,
-    "image_url": "https://dummyimage.com/360x240/cccccc/000000&text=Akkumulátor+60Ah"
+    "image_url": "/placeholder.svg"
   },
   {
     "id": 4,
@@ -45,7 +45,7 @@
     "description": "Az első féktárcsák világos fékhatást és hosszú élettartamot biztosítanak.",
     "price": 15990,
     "stock": 13,
-    "image_url": "https://dummyimage.com/360x240/cccccc/000000&text=Féktárcsa+első"
+    "image_url": "/placeholder.svg"
   },
   {
     "id": 5,
@@ -57,7 +57,7 @@
     "description": "Pontosan hangolt, kényelmes és stabil hátsó lengéscsillapító.",
     "price": 43990,
     "stock": 18,
-    "image_url": "https://dummyimage.com/360x240/cccccc/000000&text=Lengéscsillapító+hátsó"
+    "image_url": "/placeholder.svg"
   },
   {
     "id": 6,
@@ -69,7 +69,7 @@
     "description": "Teljes kuplung szett a precíz váltásért és megbízható hajtásért.",
     "price": 88990,
     "stock": 9,
-    "image_url": "https://dummyimage.com/360x240/cccccc/000000&text=Kuplung+készlet"
+    "image_url": "/placeholder.svg"
   },
   {
     "id": 7,
@@ -81,7 +81,7 @@
     "description": "Erős és megbízható vízszivattyú a motor optimális hűtéséért.",
     "price": 14990,
     "stock": 28,
-    "image_url": "https://dummyimage.com/360x240/cccccc/000000&text=Vízpumpa"
+    "image_url": "/placeholder.svg"
   },
   {
     "id": 8,
@@ -93,7 +93,7 @@
     "description": "Erős fényű xenon izzó a jobb láthatóságért éjszakai vezetésnél.",
     "price": 12490,
     "stock": 41,
-    "image_url": "https://dummyimage.com/360x240/cccccc/000000&text=Xenon+Izzó+D2S"
+    "image_url": "/placeholder.svg"
   },
   {
     "id": 9,
@@ -105,6 +105,6 @@
     "description": "Gyors gyújtás és stabil motorfutás a hosszabb élettartamért.",
     "price": 5690,
     "stock": 64,
-    "image_url": "https://dummyimage.com/360x240/cccccc/000000&text=Gyújtógyertya"
+    "image_url": "/placeholder.svg"
   }
 ]

@@ -6,7 +6,10 @@ import { useCart } from '../lib/CartContext';
 import { useAuth } from '../lib/useAuth';
 import { supabase } from '../lib/supabaseClient';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY).catch((error) => {
+  console.error('Stripe betöltési hiba:', error);
+  return null;
+});
 
 function CheckoutFormContent() {
   const stripe = useStripe();
@@ -20,6 +23,8 @@ function CheckoutFormContent() {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [stripeLoadError, setStripeLoadError] = useState(false);
+  const [stripeLoaded, setStripeLoaded] = useState(false);
   const navigate = useNavigate();
 
   const createOrder = async () => {
@@ -78,6 +83,14 @@ function CheckoutFormContent() {
 
   const handleCardPayment = async (event) => {
     event.preventDefault();
+
+    if (stripeLoadError) {
+      setMessage(
+        '❌ A Stripe fizetés nem elérhető. Kapcsold ki az adblockert, vagy válaszd az utánvételt.'
+      );
+      setIsSubmitting(false);
+      return;
+    }
 
     if (!stripe || !elements) {
       setMessage('❌ Stripe még nem töltött be. Kérlek, próbáld később!');
@@ -196,6 +209,27 @@ function CheckoutFormContent() {
     }
   };
 
+  useEffect(() => {
+    stripePromise
+      .then((stripeInstance) => {
+        setStripeLoaded(true);
+        if (!stripeInstance) {
+          setStripeLoadError(true);
+          if (paymentMethod === 'card') {
+            setPaymentMethod('cod');
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Stripe betöltési hiba:', error);
+        setStripeLoadError(true);
+        setStripeLoaded(true);
+        if (paymentMethod === 'card') {
+          setPaymentMethod('cod');
+        }
+      });
+  }, []);
+
   const submit = (event) => {
     if (paymentMethod === 'card') {
       handleCardPayment(event);
@@ -256,7 +290,7 @@ function CheckoutFormContent() {
                   value="card"
                   checked={paymentMethod === 'card'}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || stripeLoadError}
                 />
                 Bankkártya (Stripe)
               </label>
@@ -271,6 +305,12 @@ function CheckoutFormContent() {
                 />
                 Utánvétel
               </label>
+              {stripeLoadError && (
+                <p className="status-text">
+                  A Stripe fizetés blokkolva van vagy nem tölt be. Kapcsold ki az
+                  adblockert, vagy válaszd az utánvételt.
+                </p>
+              )}
             </div>
 
             {paymentMethod === 'card' && (

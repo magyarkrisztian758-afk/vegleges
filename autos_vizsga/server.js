@@ -47,7 +47,7 @@ app.post('/api/login', (req, res) => {
     user: {
       email,
       role: 'user',
-      name: 'Teszt Felhasználó'
+      name: 'CarCore Ügyfél'
     }
   });
 });
@@ -107,3 +107,6 @@ app.post('/api/products/:id/update-stock', (req, res) => {
 app.listen(PORT, () => {
   console.log(`CarCore backend fut a http://localhost:${PORT}`);
 });
+
+// Exportáljuk az app-ot a tesztek számára
+export default app;
